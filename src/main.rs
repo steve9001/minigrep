@@ -1,9 +1,13 @@
 use std::env;
 use std::fs;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let config = parse_config(&args);
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("Error parsing arguments: {}", err);
+        process::exit(1)
+    });
 
     println!("query {}", config.query);
     println!("filename {}", config.filename);
@@ -18,13 +22,13 @@ struct Config<'a> {
     filename: &'a str
 }
 
-//fn parse_config(args: &Vec<String>) -> (&str, &str) {
-fn parse_config(args: &[String]) -> Config {
-    //let q = args[1].to_string();
-    let query = &args[1][..];
-    //let f = args[2].to_string();
-    let filename = &args[2][..];
-    //Config { query: &args[1], filename: &args[2] }
-    //Config { query: q, filename: f }
-    Config { query, filename }
+impl<'a> Config<'a> {
+    fn new(args: &[String]) -> Result<Config, &'static str> {
+        if args.len() < 3 {
+            return Err("not enough arguments");
+        }
+        let query = &args[1][..];
+        let filename = &args[2][..];
+        Ok(Config { query, filename })
+    }
 }
