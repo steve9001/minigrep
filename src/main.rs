@@ -1,20 +1,33 @@
 use std::env;
 use std::fs;
 use std::process;
+use std::error::Error;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let config = Config::new(&args).unwrap_or_else(|err| {
         println!("Error parsing arguments: {}", err);
-        process::exit(1)
+        process::exit(1);
     });
 
     println!("query {}", config.query);
     println!("filename {}", config.filename);
 
-    let _contents = fs::read_to_string(config.filename)
-        .expect("Something went wrong reading the file");
+    if let Err(e) = run(config) {
+        println!("Error running search: {}", e);
+        process::exit(1);
+    };
+}
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let _contents = fs::read_to_string(config.filename)?;
+        //.unwrap_or_else(|err| {
+        //return Err("Something went wrong reading the file");
+        //return "Something went wrong reading the file";
+    //});
+        //.expect("Something went wrong reading the file");
     //println!("contents {}", contents);
+    Ok(())
 }
 
 struct Config<'a> {
